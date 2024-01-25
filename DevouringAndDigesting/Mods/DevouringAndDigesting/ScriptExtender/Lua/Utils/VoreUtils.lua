@@ -35,6 +35,7 @@ end
 ---@param swallowType string @internal name of Status Effect
 ---@param notNested bool @if prey is not transferred to another stomach
 function SP_SwallowPrey(pred, prey, swallowType, notNested)
+	_P('Swallowing')
 	Osi.ApplyStatus(prey, swallowType, -1, 1, pred)
 	Osi.ApplyStatus(pred, "SP_Stuffed", -1, 1, pred)
 	SP_FillPredPreyTable(pred, prey)
@@ -54,6 +55,7 @@ function SP_SwallowPrey(pred, prey, swallowType, notNested)
 		end
 		SP_UpdateWeight(pred, true)
 	end
+	_P('Swallowing END')
 end
 
 
@@ -99,6 +101,7 @@ function SP_RegurgitatePrey(pred, prey, alive, spell)
 	-- find prey to remove, clear their status, mark them for removal
     for k, v in pairs(PreyTablePred) do
 		local preyAlive = Osi.IsDead(k)
+		_P('Prey is dead: ' .. preyAlive .. '        ' .. k)
         if v == pred and (prey == "All" or k == prey) and (alive == 2 or (preyAlive == alive and (alive == 0 or (PersistentVars['PreyWeightTable'][k] <= PersistentVars['FakePreyWeightTable'][k] // 5)))) then
 			_P('Pred:' .. v)
 			_P('Prey:' .. k)
@@ -132,8 +135,35 @@ function SP_RegurgitatePrey(pred, prey, alive, spell)
 				Osi.SetVisible(k, 1)
 				table.insert(markedForRemoval, k)
 				if spell == 'Absorb' then
-					Osi.MoveAllItemsTo(k, pred, 1, 1, 0, 1)
-					Osi.MoveAllStoryItemsTo(k, pred, 1, 0)
+					local predData = Ext.Entity.Get(pred)
+					local predRoom = predData.EncumbranceStats["HeavilyEncumberedWeight"] - predData.InventoryWeight.Weight - 100
+					_P("Predroom: " .. predRoom)
+					local itemList = Ext.Entity.Get(k).InventoryOwner.Inventories
+
+					local rotationOffset = 0
+					local rotationOffset1 = 360 // (#itemList)
+					
+					for _, t in pairs(itemList) do
+						local nextInventory = t:GetAllComponents().InventoryContainer.Items
+						
+						for k, v in pairs(nextInventory) do
+							local uuid = v.Item:GetAllComponents().Uuid.EntityUuid
+							local itemWeight = v.Item.Data.Weight
+							
+							if predRoom > itemWeight then
+								Osi.ToInventory(uuid, pred, 9999, 0, 0)
+								predRoom = predRoom - itemWeight
+							else
+								local predX, predY, predZ = Osi.getPosition(pred)
+								local predXRotation, predYRotation, predZRotation = Osi.GetRotation(pred) -- Y-rotation == yaw
+								predYRotation = (predYRotation + rotationOffset) * math.pi / 180 -- Osi.GetRotation() returns degrees for some ungodly reason, let's fix that :)
+								local newX = predX+1*math.cos(predYRotation) -- equation for rotating a vector in the X dimension
+								local newZ = predZ+1*math.sin(predYRotation) -- equation for rotating a vector in the Z dimension
+								Osi.ItemMoveToPosition(uuid, newX, predY, newZ, 100000, 100000) -- places prey at pred's location, vaguely in front of them.
+								rotationOffset = rotationOffset + rotationOffset1
+							end
+						end
+					end
 					Osi.TeleportToPosition(k, 100000, 0, 100000, "", 0, 0, 0, 1, 0)
 				else
 					local predX, predY, predZ = Osi.getPosition(pred)
@@ -171,7 +201,7 @@ function SP_RegurgitatePrey(pred, prey, alive, spell)
 				predYRotation = (predYRotation + rotationOffset) * math.pi / 180 -- Osi.GetRotation() returns degrees for some ungodly reason, let's fix that :)
 				local newX = predX+RegurgDist*math.cos(predYRotation) -- equation for rotating a vector in the X dimension
 				local newZ = predZ+RegurgDist*math.sin(predYRotation) -- equation for rotating a vector in the Z dimension
-				Osi.ItemMoveToPosition(uuid, newX, predY, newZ, 10, 10) -- places prey at pred's location, vaguely in front of them.
+				Osi.ItemMoveToPosition(uuid, newX, predY, newZ, 100000, 100000) -- places prey at pred's location, vaguely in front of them.
 				_P("Moved Item " .. uuid)
 				rotationOffset = rotationOffset + rotationOffset1
 			end
@@ -184,10 +214,8 @@ function SP_RegurgitatePrey(pred, prey, alive, spell)
 		_P("WARNING, no one was regurgitated by " .. pred)
 	end
 	-- remove regurgitated prey from the table
-	_P("Clearing Table")
 	for _, v in ipairs(markedForRemoval) do
 		PreyTablePred[v] = nil
-		_P("prey removed: " .. v)
 	end
 	
 	-- if pred has no more prey inside
@@ -230,8 +258,6 @@ end
 ---@param pred GUIDSTRING @guid of pred
 function SP_UpdateWeight(pred, items)
 	local allPrey = SP_GetAllPrey(pred)
-	_P("ALLPREY")
-	_D(allPrey)
 	local newWeight = 0
 	for _, v in pairs(allPrey) do
 		newWeight = newWeight + (PersistentVars['PreyWeightTable'][v] or 0)
@@ -249,9 +275,6 @@ function SP_UpdateWeight(pred, items)
 	Osi.TemplateAddTo('8d3b74d4-0fe6-465f-9e96-36b416f4ea6f', pred, 1, 0)
 	
 	SP_UpdateBelly(pred, newWeightVisual)
-	
-	_P('NEW WEIGHTS ' .. pred)
-	_D(PersistentVars['PreyWeightTable'])
 end
 
 ---@param pred GUIDSTRING @guid of pred
@@ -271,12 +294,14 @@ function SP_UpdateBelly(pred, weight)
 		return
 	end
 	-- 1 == normal body, 2 == strong body. Did not check orks
-	local bodyShape = Ext.Entity.Get(pred).CharacterCreationStats.BodyShape + 1
-	-- should not happen
-	if bodyShape > 2 then
-		bodyShape = 1
+	local bodyShape = 1
+	local tags = Ext.Entity.Get(pred).Tag.Tags
+	for k, v in pairs(tags) do
+		if v == "d3116e58-c55a-4853-a700-bee996207397" then
+			bodyShape = 2
+		end
 	end
-	
+
 	-- remove when separacte orc bellies are added. Their body is closer to the strong body, so a strong belly is used
 	if string.find(Osi.GetRace(pred, 1), 'Orc') ~= nil then
 		bodyShape = 2
@@ -326,8 +351,8 @@ end
 
 function SP_CanFitItem(pred, item)
 	local predData = Ext.Entity.Get(pred)
-    local predRoom = (predData.EncumbranceStats["HeavilyEncumberedWeight"] - predData.InventoryWeight.Weight) / 1000
-    local itemData = Ext.Entity.Get(item).Data.Weight / 1000
+    local predRoom = predData.EncumbranceStats["HeavilyEncumberedWeight"] - predData.InventoryWeight.Weight
+    local itemData = Ext.Entity.Get(item).Data.Weight
 	if predRoom > itemData then
 		return true
 	else

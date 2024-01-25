@@ -185,7 +185,7 @@ function SP_OnDeath(character)
 		-- temp characters' corpses are not saved is save file, so they might cause issues unless disposed of on death
 		if Ext.Entity.Get(character).ServerCharacter.Temporary == true then
 			_P("Absorbing temp character")
-			SP_RegurgitatePrey(pred, character, 2, "Absorb")
+			SP_DelayCall(200, function() SP_RegurgitatePrey(pred, character, 2, "Absorb") end)
 		else
 			-- digested but not released prey will be stored out of bounds
 			Osi.TeleportToPosition(character, -100000, 0, -100000, "", 0, 0, 0, 1, 0)
@@ -276,6 +276,17 @@ function SP_OnLongRest()
 end
 
 
+function SP_ResetVore()
+	for k, v in pairs(PreyTablePred) do
+        SP_RegurgitatePrey(v, k, 2, "LevelChange")
+    end
+	PreyTablePred = {}
+	PersistentVars['PreyTablePred'] = {}
+	PersistentVars['PreyWeightTable'] = {}
+	PersistentVars['FakePreyWeightTable'] = {}
+	PersistentVars['DisableDownedPreyTable'] = {}
+end
+
 Ext.Osiris.RegisterListener("UsingSpellOnTarget", 6, "after", SP_OnSpellCastTarget)
 Ext.Osiris.RegisterListener("CastedSpell", 5, "after", SP_SpellCast)
 Ext.Osiris.RegisterListener("RollResult", 6, "after", SP_RollResults)
@@ -289,3 +300,5 @@ Ext.Osiris.RegisterListener("LongRestFinished", 0, "after", SP_OnLongRest)
 
 Ext.Events.SessionLoaded:Subscribe(SP_OnSessionLoaded)
 Ext.Events.ResetCompleted:Subscribe(SP_On_reset_completed)
+
+Ext.RegisterConsoleCommand("ResetVore", SP_ResetVore);
