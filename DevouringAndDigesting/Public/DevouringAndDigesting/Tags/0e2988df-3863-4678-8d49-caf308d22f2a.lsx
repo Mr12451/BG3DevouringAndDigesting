@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="0" revision="6" build="3" lslib_meta="v1,bswap_guids" />
+	<region id="Tags">
+		<node id="Tags">
+			<attribute id="Description" type="LSString" value="The weight of a stomach" />
+			<attribute id="DisplayDescription" type="TranslatedString" handle="hdb8de1d1g2aceg4e07g89dag0793dc76a8a4" version="1" />
+			<attribute id="DisplayName" type="TranslatedString" handle="h86f0551cg30cag4d85g962fgb14dfd2a29b2" version="3" />
+			<attribute id="Icon" type="FixedString" value="" />
+			<attribute id="Name" type="FixedString" value="Weight" />
+			<attribute id="UUID" type="guid" value="0e2988df-3863-4678-8d49-caf308d22f2a" />
+			<children>
+				<node id="Categories" />
+				<node id="Properties" />
+			</children>
+		</node>
+	</region>
+</save>
