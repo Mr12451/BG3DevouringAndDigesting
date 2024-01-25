@@ -63,6 +63,7 @@ function SP_SwallowItem(pred, item)
 		local stomach = Osi.GetItemByTemplateInInventory('eb1d0750-903e-44a9-927e-85200b9ecc5e', pred)
 		Osi.ToInventory(item, stomach, 9999, 0, 0)
 		Osi.ApplyStatus(pred, "SP_Stuffed", -1, 1, pred)
+		Osi.AddSpell(pred, 'SP_Regurgitate', 0, 0)
 		SP_DelayCall(50, function() SP_UpdateWeight(pred, true) end)
     else	
 		Osi.TemplateAddTo('eb1d0750-903e-44a9-927e-85200b9ecc5e', pred, 1, 0)
@@ -77,6 +78,7 @@ function SP_SwallowAllItems(pred, container)
 		Osi.MoveAllItemsTo(container, stomach, 0, 0, 0, 0)
 		Osi.MoveAllStoryItemsTo(container, stomach, 0, 0)
 		Osi.ApplyStatus(pred, "SP_Stuffed", -1, 1, pred)
+		Osi.AddSpell(pred, 'SP_Regurgitate', 0, 0)
 		SP_DelayCall(50, function() SP_UpdateWeight(pred, true) end)
     else	
 		Osi.TemplateAddTo('eb1d0750-903e-44a9-927e-85200b9ecc5e', pred, 1, 0)
@@ -189,7 +191,7 @@ function SP_RegurgitatePrey(pred, prey, alive, spell)
 	end
 	
 	-- if pred has no more prey inside
-    if #SP_GetAllPrey(pred) <= 0 then
+    if #SP_GetAllPrey(pred) <= 0 and hasStomach == false then
         Osi.RemoveStatus(pred, 'SP_Stuffed')
         Osi.RemoveSpell(pred, 'SP_Regurgitate', 1)
     end
