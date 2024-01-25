@@ -11,7 +11,7 @@ end
 function SP_GetTotalCharacterWeight(character)
     local charData = Ext.Entity.Get(character)
     _P("Total weight of " .. SP_GetDisplayNameFromGUID(character) .. " is " ..
-           (charData.InventoryWeight.Weight + charData.Data.Weight) / 500 .. " lbs")
+           (charData.InventoryWeight.Weight + charData.Data.Weight) / 1000 .. " kg")
     return (charData.InventoryWeight.Weight + charData.Data.Weight) / 1000
 end
 
@@ -38,7 +38,6 @@ function SP_DelayCallTicks(ticks, func)
     if ticks <= 0 then
         func()
     else
-        _P("delay")
         Ext.OnNextTick(function()
             SP_DelayCallTicks(ticks - 1, func)
         end)
@@ -81,12 +80,3 @@ function SP_Deepcopy(table, copies)
     end
     return copy
 end
-
-function SP_TableContains(table, element)
-    for _, value in pairs(table) do
-      if value == element then
-        return true
-      end
-    end
-    return false
-  end

@@ -27,7 +27,7 @@
 	<content contentuid="hcdefe4f0g5c06g4078gaaecgc566f24f38a9" version="1">Stuffed!</content>
 	<content contentuid="h4b237c03g75a6g4658gbc72g3f70fe82f658" version="1">The weight of your prey slows you down.</content>
 	<content contentuid="h55ded1e9g6c62g4d40gbcc5g6adadbf42edc" version="1">Regurgitate Everything</content>
-	<content contentuid="h9773e0fcgc7bag4d2cga1b4gffa4ea278c08" version="1">Regurgitate all of your willing prey.</content>
+	<content contentuid="h9773e0fcgc7bag4d2cga1b4gffa4ea278c08" version="1">Regurgitate all of your living prey.</content>
 	<content contentuid="h339b4a78ga0a6g4b55g93fag7c8fb6725002" version="1">Regurgitate One</content>
 	<content contentuid="hfed57717ga1feg4c72gad20gbaaa9d1adf1b" version="1">Regurgitate [1] from your stomach.</content>
 	<content contentuid="h69f84568gc742g45aeg95a0g7b1862c77378" version="1">Regurgitate</content>
@@ -41,4 +41,12 @@
 	<content contentuid="h610d50d6gbd94g4a6cgab58g509d8575153d" version="1">This is in your stomach, you can't drop it.</content>
 	<content contentuid="hd984e989ge07dg4eefgb2bdg1a9ef63ba49b" version="1">Digesting</content>
 	<content contentuid="heafac356gd0dcg4f8fg8bf6ge0f4b1c63ba0" version="1">You are digesting your prey</content>
+	<content contentuid="hde5b3914gbda1g436cga5eeg8b3a99a72351" version="1">Disposal</content>
+	<content contentuid="h9e865451g0c75g453cg98b6g51bb45be5445" version="1">Releases all of your fully digested prey.</content>
+	<content contentuid="h9fde97c2gf3b3g4f37g932dg877ecd3f9502" version="1">Absorb</content>
+	<content contentuid="he813d5dbgf297g4cf3g88c5g06913a2b2fb6" version="1">Absorbs all of your fully digested prey, adding their items to your inventory.</content>
+	<content contentuid="hccc6b399ge95eg4bb9gbc9dgf6990086aa7e" version="1">Being Digested</content>
+	<content contentuid="hb7af406bg03edg4952g9838g49a2ecc066f6" version="1">It's already too late for them...</content>
+	<content contentuid="hc9a79498gebf3g49f9g8da5ge4efd0e68c1d" version="1">Item stomach</content>
+	<content contentuid="h40f63ac7g4bccg44d2gb056g73e93f1c2ef9" version="1">Your swallowed items are stored here</content>
 </contentList>
