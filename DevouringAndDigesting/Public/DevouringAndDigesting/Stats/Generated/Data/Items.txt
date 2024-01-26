@@ -28,8 +28,6 @@ using "GLO_INFERNALBOX_BOUNDEDTO"
 data "DisplayName" "hb2343ea8g2f0eg4553ga46dg243947a77b09;2"
 data "Description" "h610d50d6gbd94g4a6cgab58g509d8575153d;1"
 
-
-
 new entry "SP_Item_Stomach"
 type "Object"
 using "_Loot"

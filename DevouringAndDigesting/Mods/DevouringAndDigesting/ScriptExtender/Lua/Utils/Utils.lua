@@ -39,6 +39,7 @@ function SP_DelayCallTicks(ticks, func)
         func()
     else
         Ext.OnNextTick(function()
+			_P('delay')
             SP_DelayCallTicks(ticks - 1, func)
         end)
     end
@@ -79,4 +80,16 @@ function SP_Deepcopy(table, copies)
         copy = table
     end
     return copy
+end
+
+---Checks if an element is in the values of a table
+---@param table table table to query
+---@param element any element to query with
+function SP_TableContains(table, element)
+    for _, value in pairs(table) do
+      if value == element then
+        return true
+      end
+    end
+    return false
 end

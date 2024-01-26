@@ -4,22 +4,24 @@ StatPaths={
     "Public/DevouringAndDigesting/Stats/Generated/Data/Armor.txt",
     "Public/DevouringAndDigesting/Stats/Generated/Data/Potions.txt",
     "Public/DevouringAndDigesting/Stats/Generated/Data/Spell_Vore.txt",
+	"Public/DevouringAndDigesting/Stats/Generated/Data/Items.txt",
 }
 
 Ext.Require("Utils/Utils.lua")
 Ext.Require("Utils/VoreUtils.lua")
+Ext.Require("Utils/Config.lua")
 
 
 PersistentVars = {}
 
-calculateRest = true
+CalculateRest = true
 
----Triggers on spell cast
----@param caster GUIDSTRING @guid of caster
----@param spell string  @internal name of spell
----@param spellType string  @type of spell
----@param spellElement string   @element of spell (like fire, lightning, etc I think)
----@param storyActionID integer
+---Triggers on spell cast.
+---@param caster CHARACTER
+---@param spell string
+---@param spellType string?
+---@param spellElement string? Like fire, lightning, etc I think.
+---@param storyActionID integer?
 function SP_SpellCast(caster, spell, spellType, spellElement, storyActionID)
     if string.sub(spell,0,15) == 'SP_Regurgitate_' then -- format of Regurgitate spells will always be 'SP_Regurgitate_' (which is 15 characters) followed by either the guid of the prey, or 'All.' Probably possible to add some sort of extra data to the custom spell, but this is way easier
         local prey = string.sub(spell, 16) -- grabs the guid of the prey, or the string 'All' if we're regurgitating everything
@@ -34,13 +36,13 @@ function SP_SpellCast(caster, spell, spellType, spellElement, storyActionID)
 end
 
 
----Triggers when a spell is cast with a target
----@param caster GUIDSTRING @guid of caster
----@param target GUIDSTRING @guid of target
----@param spell string  @internal name of spell
----@param spellType string  @type of spell
----@param spellElement string   @element of spell (like fire, lightning, etc I think)
----@param storyActionID integer
+---Triggers when a spell is cast with a target.
+---@param caster CHARACTER guid of caster
+---@param target CHARACTER guid of target
+---@param spell string internal name of spell
+---@param spellType string? type of spell
+---@param spellElement string? Like fire, lightning, etc I think.
+---@param storyActionID integer?
 function SP_OnSpellCastTarget(caster, target, spell, spellType, spellElement, storyActionID)
 	if Osi.HasActiveStatus(target, "SP_Inedible") ~= 0 then
 		return 
@@ -75,15 +77,15 @@ end
 
 
 
----Triggers whenever there's a skill check
----@param eventName string @name of event passed from the func that called the roll
----@param roller CHARACTER  @guid of roller
----@param rollSubject GUIDSTRING    @guid of character they rolled against
----@param resultType integer    @result of roll. 0 == fail, 1 == success
----@param isActiveRoll integer  @whether or not the rolling GUI popped up. 0 == no, 1 == yes
----@param criticality CRITICALITYTYPE @whether or not it was a crit and what kind. 0 == no crit, 1 == crit success, 2 == crit fail
+---Triggers whenever there's a skill check.
+---@param eventName string Name of event passed from the func that called the roll.
+---@param roller CHARACTER Roller.
+---@param rollSubject CHARACTER Character they rolled against.
+---@param resultType integer Result of roll. 0 == fail, 1 == success.
+---@param isActiveRoll integer? Whether or not the rolling GUI popped up. 0 == no, 1 == yes.
+---@param criticality CRITICALITYTYPE? Whether or not it was a crit and what kind. 0 == no crit, 1 == crit success, 2 == crit fail.
 function SP_RollResults(eventName, roller, rollSubject, resultType, isActiveRoll, criticality)
-    if eventName == "SwallowLethalCheck" and resultType ~= 0 then
+    if eventName == "SwallowLethalCheck" and (resultType ~= 0 or ConfigVars.VoreDifficulty.value == 'debug') then
         _P('Lethal Swallow Success by ' .. roller)
 		SP_SwallowPrey(roller, rollSubject, 'SP_Swallowed_Lethal', true)
     end
@@ -98,6 +100,7 @@ end
 function SP_OnSessionLoaded()
     -- Persistent variables are only available after SessionLoaded is triggered!
     _D(PersistentVars)
+	SP_GetConfigFromFile()
     if PersistentVars['PreyTablePred'] ~= nil then
         _P('loading table')
         PreyTablePred = SP_Deepcopy(PersistentVars['PreyTablePred'])
@@ -123,14 +126,15 @@ end
 function SP_On_reset_completed() 
     for _, statPath in ipairs(StatPaths) do
         _P(statPath)
+---@diagnostic disable-next-line: undefined-field
         Ext.Stats.LoadStatsFile(statPath,1)
     end
     _P('Reloading stats!')
 end
 
 
----runs whenever you change game regions
----@param levelName string @name of new game region
+---Runs whenever you change game regions.
+---@param level string? Name of new game region.
 function SP_OnLevelChange(level)
 	-- for some reason this triggers when you load game from main menu, tried changing to what event it's subscribed
 	_P('LEVEL CHANGE')
@@ -148,23 +152,28 @@ function SP_OnLevelChange(level)
 end
 
 
----runs each time a status is applied
----@param object GUIDSTRING @guid of recipient of status
----@param status string @internal name of status
----@param causee GUIDSTRING @guid of thing that caused status to be applied
----@param storyActionID integer
+---Runs each time a status is applied.
+---@param object CHARACTER Recipient of status.
+---@param status string Internal name of status.
+---@param causee GUIDSTRING? Thing that caused status to be applied.
+---@param storyActionID integer?
 function SP_OnStatusApplied(object, status, causee, storyActionID)
-    if status == 'SP_Digesting_Tick' then
+    if status == 'SP_Digesting' then
         for _, v in ipairs(SP_GetAllPrey(object)) do
 			local alive = (Osi.IsDead(v) == 0)
 			if alive then
-				Osi.TeleportTo(v, object, "", 0, 0, 0, 0, 0)
+				if ConfigVars.TeleportPrey.value == true then
+					Osi.TeleportTo(v, object, "", 0, 0, 0, 0, 0)
+				end
 				if Osi.HasActiveStatus(v, 'SP_Swallowed_Lethal') == 1 then
 					SP_VoreCheck(object, v, "StruggleCheck")
 				end
 			end
         end
-        
+	elseif status == 'SP_Inedible' then
+        Osi.RemoveStatus(object, 'SP_Inedible', "")
+    elseif status == 'SP_PotionOfGluttony_Status' then
+        Osi.RemoveStatus(object, 'SP_PotionOfGluttony_Status', "")
     elseif status == 'SP_Item_Bound' then
         _P("Applied " .. status .. " Status to " .. object)
     end
@@ -185,10 +194,17 @@ function SP_OnDeath(character)
 		-- temp characters' corpses are not saved is save file, so they might cause issues unless disposed of on death
 		if Ext.Entity.Get(character).ServerCharacter.Temporary == true then
 			_P("Absorbing temp character")
-			SP_DelayCall(200, function() SP_RegurgitatePrey(pred, character, 2, "Absorb") end)
+			SP_DelayCall(300, function() SP_RegurgitatePrey(pred, character, 2, "Absorb") end)
 		else
 			-- digested but not released prey will be stored out of bounds
 			Osi.TeleportToPosition(character, -100000, 0, -100000, "", 0, 0, 0, 1, 0)
+			-- implementation for fast digestion
+			if ConfigVars.SlowDigestion.value == false then
+				SP_DelayCall(300, function() 
+					local preyWeightDiff = PersistentVars['PreyWeightTable'][character] - PersistentVars['FakePreyWeightTable'][character] // 5
+					SP_ReduceWeightRecursive(character, preyWeightDiff, true)
+				end)
+			end
 		end
 		
     end
@@ -222,22 +238,21 @@ end
 ---@param character CHARACTER
 function SP_OnShortRest(character)
 	-- this is necessary to avoid multiple calls of this function (for each party member)
-	if calculateRest == false then
+	if CalculateRest == false then
 		return
 	end
-	calculateRest = false
+	CalculateRest = false
 	
 	_P('SP_OnShortRest')
 	
 	for k, v in pairs(PersistentVars['PreyWeightTable']) do
 		if Osi.IsDead(k) == 1 then
-			-- local preyWeightDiff = PersistentVars['FakePreyWeightTable'][k] // 5
-			local preyWeightDiff = 20
+			local preyWeightDiff = tonumber(ConfigVars.DigestionRateShort.value)
 			-- prey's weight after digestion should not be smaller then 1/5th of their original (fake) weight
 			if (v - preyWeightDiff) < (PersistentVars['FakePreyWeightTable'][k] // 5) then
 				preyWeightDiff = v - PersistentVars['FakePreyWeightTable'][k] // 5
 			end
-			SP_ReduceWeightRecursive(k, preyWeightDiff)
+			SP_ReduceWeightRecursive(k, preyWeightDiff, false)
 		end
     end
 	
@@ -248,7 +263,7 @@ function SP_OnShortRest(character)
 	_D(PersistentVars['PreyWeightTable'])
 	_D(PersistentVars['FakePreyWeightTable'])
 	-- this is necessary to avoid multiple calls of this function (for each party member)
-	SP_DelayCall(50, function() calculateRest = true end)
+	SP_DelayCall(50, function() CalculateRest = true end)
 end
 
 ---fires once after long rest
@@ -257,13 +272,12 @@ function SP_OnLongRest()
 	
 	for k, v in pairs(PersistentVars['PreyWeightTable']) do
 		if Osi.IsDead(k) == 1 then
-			-- local preyWeightDiff = PersistentVars['FakePreyWeightTable'][k] // 5
-			local preyWeightDiff = 70
+			local preyWeightDiff = tonumber(ConfigVars.DigestionRateLong.value)
 			-- prey's weight after digestion should not be smaller then 1/5th of their original (fake) weight
 			if (v - preyWeightDiff) < (PersistentVars['FakePreyWeightTable'][k] // 5) then
 				preyWeightDiff = v - PersistentVars['FakePreyWeightTable'][k] // 5
 			end
-			SP_ReduceWeightRecursive(k, preyWeightDiff)
+			SP_ReduceWeightRecursive(k, preyWeightDiff, false)
 		end
     end
 	
@@ -287,6 +301,9 @@ function SP_ResetVore()
 	PersistentVars['DisableDownedPreyTable'] = {}
 end
 
+-- If you know where to get type hints for this, please let me know.
+if Ext.Osiris == nil then Ext.Osiris = {} end
+
 Ext.Osiris.RegisterListener("UsingSpellOnTarget", 6, "after", SP_OnSpellCastTarget)
 Ext.Osiris.RegisterListener("CastedSpell", 5, "after", SP_SpellCast)
 Ext.Osiris.RegisterListener("RollResult", 6, "after", SP_RollResults)
@@ -300,5 +317,9 @@ Ext.Osiris.RegisterListener("LongRestFinished", 0, "after", SP_OnLongRest)
 
 Ext.Events.SessionLoaded:Subscribe(SP_OnSessionLoaded)
 Ext.Events.ResetCompleted:Subscribe(SP_On_reset_completed)
+
+-- Lets you config during runtime
+Ext.RegisterConsoleCommand('VoreConfig', VoreConfig);
+Ext.RegisterConsoleCommand('VoreConfigOptions', VoreConfigOptions);
 
 Ext.RegisterConsoleCommand("ResetVore", SP_ResetVore);
