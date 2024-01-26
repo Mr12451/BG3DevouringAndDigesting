@@ -179,7 +179,7 @@ function SP_RegurgitatePrey(pred, prey, alive, spell)
     end
 	
 	local hasStomach = true
-	if Osi.TemplateIsInInventory('eb1d0750-903e-44a9-927e-85200b9ecc5e', pred) == 1 and alive ~= 1 and spell ~= "LevelChange" then
+	if Osi.TemplateIsInInventory('eb1d0750-903e-44a9-927e-85200b9ecc5e', pred) == 1 and alive ~= 1 and spell ~= "LevelChange" and prey == 'All' then
 		-- since (item) stomach is removed after a delay, this is necessary to tell the weight update function that it is empty
 		hasStomach = false
 		local stomach = Osi.GetItemByTemplateInInventory('eb1d0750-903e-44a9-927e-85200b9ecc5e', pred)
@@ -211,7 +211,7 @@ function SP_RegurgitatePrey(pred, prey, alive, spell)
 	end
 	-- check if no one was regurgitated - shouldn't happen
 	if #markedForRemoval == 0 then
-		_P("WARNING, no one was regurgitated by " .. pred)
+		_P("WARNING, no prey was regurgitated by " .. pred)
 	end
 	-- remove regurgitated prey from the table
 	for _, v in ipairs(markedForRemoval) do
@@ -228,8 +228,11 @@ function SP_RegurgitatePrey(pred, prey, alive, spell)
 	-- since SP_RegurgitatePrey is used when a prey is released for any reason (including death), I moved this here to avoid desync
 	PersistentVars['PreyTablePred'] = SP_Deepcopy(PreyTablePred)
 	
-	-- updates the weight of the pred
-	SP_UpdateWeight(pred, hasStomach)
+	-- updates the weight of the pred if the items or prey were regurgitated
+	if (hasStomach == false) or (#markedForRemoval > 0) then
+		SP_UpdateWeight(pred, hasStomach)
+	end
+
 	_P('Ending Regurgitation')
 end
 
