@@ -51,7 +51,7 @@
         ]
     },
     "files.associations": {
-        "*.txt": "bg3txt"
+        "*.txt": "bg3"
     },
     "emmylua.spell.dict": [
         "vore",
@@ -85,7 +85,11 @@
     "files.exclude": {
         "DevouringAndDigesting\\Public\\DevouringAndDigesting\\Stats\\Generated\\Data\\*.txt": true
     },
-    "bg3ModHelper.rootModPath": "c:\\Games\\BG3Mods\\temp_mod\\BG3DevouringAndDigesting"
+    "bg3ModHelper.rootModPath": "c:\\Games\\BG3Mods\\temp_mod\\BG3DevouringAndDigesting",
+    "bg3ModHelper.modDestPath": "C:/Users/Acolyte/AppData/Local/Larian Studios/Baldur's Gate 3/Mods/",
+    "bg3ModHelper.packingPriority": 0,
+    "Lua.workspace.preloadFileSize": 700,
+    "bg3ModHelper.modName": "BG3DevouringAndDigesting"
 
       
 }

@@ -24,34 +24,8 @@ StuffedAdditions = {
     ["SP_SC_StrengthFromMany_Status"] = 0
 }
 
----table that stores all names of digestion statuses
----@type table<string, table<integer, string>>
-DigestionStatuses = {
-    ['O'] = {
-        [0] = "SP_Swallowed_Endo_O",
-        [1] = "SP_Swallowed_Dead_O",
-        [2] = "SP_Swallowed_Lethal_O",
-    },
-    ['A'] = {
-        [0] = "SP_Swallowed_Endo_A",
-        [1] = "SP_Swallowed_Dead_A",
-        [2] = "SP_Swallowed_Lethal_A",
-    },
-    ['U'] = {
-        [0] = "SP_Swallowed_Endo_U",
-        [1] = "SP_Swallowed_Dead_U",
-        [2] = "SP_Swallowed_Lethal_U",
-    },
-    ['C'] = {
-        [0] = "SP_Swallowed_Endo_C",
-        [1] = "SP_Swallowed_Dead_C",
-        [2] = "SP_Swallowed_Lethal_C",
-    },
-}
-
 ---enum for digestion types
 DType = {
-    Any = -1,
     Endo = 0,
     Dead = 1,
     Lethal = 2,
@@ -65,6 +39,15 @@ EnumLoci = {
     ["U"] = true,
     ["C"] = true
 }
+
+---enum for loci
+EnumLociFeat = {
+    ["O"] = "SP_CanOralVore",
+    ["A"] = "SP_CanAnalVore",
+    ["U"] = "SP_CanUnbirth",
+    ["C"] = "SP_CanCockVore"
+}
+
 
 -- List of gurgle sounds randomly played for stuffed preds
 GurgleSounds = {
@@ -91,25 +74,28 @@ ComplexCustomSpells = false
 
 ---a template for a new entry in VoreData
 ---@class VoreDataEntry
----@field Pred CHARACTER pred of this character
----@field Weight integer weight of this character, only for prey, 0 for preds. This is dynamically changed
----@field FixedWeight integer weight of this character, only for prey, 0 for preds. This is stored to keep the track of digestion process
----@field WeightReduction integer by how much preys weight was reduced by preds perks
----@field DisableDowned boolean if a tag that disables downed state was appled on swallow. Should be false for non-prey
----@field Unpreferred boolean if a tag that makes AI prefer attacking other targets was applied on swallow. Should be false for non-prey
----@field Digestion integer dygestion types 0 == endo, 1 == dead, 2 == lethal, 3 == none. for prey only
----@field Combat string guid of combat character is in
+---@field Pred CHARACTER pred of this character. "" if none. should never be nil
+---@field Weight integer weight of this character, only for prey, 0 for preds. This is dynamically changed (prey only)
+---@field FixedWeight integer weight of this character, only for prey, 0 for preds. This is stored to keep the track of digestion process (prey only)
+---@field WeightReduction integer by how much preys weight was reduced by preds perks (prey only)
+---@field DisableDowned boolean if a tag that disables downed state was appled on swallow. Should be false for non-prey (prey only)
+---@field Unpreferred boolean if a tag that makes AI prefer attacking other targets was applied on swallow. Should be false for non-prey (prey only)
+---@field Digestion integer dygestion types. DType enum as avalible types (prey only)
+---@field Combat string guid of combat character is in. "" if none. should never be nil
 ---@field Prey table<CHARACTER, string> value of the prey is the locus they are in
----@field Items GUIDSTRING id of stomach item that contains swallowed items in preds inventory
+---@field Items GUIDSTRING id of stomach item that contains swallowed items in preds inventory. "" if none. should never be nil
 ---@field Fat integer For weigth gain, only visually increases the size of belly
 ---@field AddWeight integer AddWeight is weight that does not belong to any prey and is reduced at the same rate as normal prey digestion
----@field SwallowProcess integer this is 0 when the prey is fully swallowed, for prey only
+---@field SwallowProcess integer this is 0 when the prey is fully swallowed (prey only)
 ---@field Satiation integer stores satiation that decreases hunger stacks
 ---@field Locus string Locus where this prey is stored "O" == Oral, "A" == Anal, "U" == Unbirth, "C" = pp
----@field Swallowed string what swallowed status is appled (prey only)
 ---@field StuffedStacks integer number of stuffed stacks
+---@field AcidLevel integer increases each turn during digestion up to 5, reduced when no digestion happens (pred only)
+---@field Scale integer rounded scale of a character. Used for calculating belly size when character's size is changed
 ---@field GradualDigestionTimer integer how close this pred is to doing gradual digestion
 ---@field SpellTargets table<CHARACTER, string> table of prey this character has cast a vore-related spell on. Used for multi-stage spells
+---@field SwallowedStatus string what swallowed status is appled (prey only)
+---@field DigestionStatus string what digestion status is appled (prey only)
 VoreDataEntry = {
     Pred = "",
     Weight = 0,
@@ -126,8 +112,11 @@ VoreDataEntry = {
     SwallowProcess = 0,
     Satiation = 0,
     Locus = "",
-    Swallowed = "",
     StuffedStacks = 0,
+    AcidLevel = 0,
+    Scale = 100,
     GradualDigestionTimer = 0,
     SpellTargets = {},
+    SwallowedStatus = "",
+    DigestionStatus = "",
 }

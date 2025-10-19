@@ -1,4 +1,5 @@
----@diagnostic disable
+---@meta
+---@diagnostics disable
 
 if Osi == nil then Osi = {} end
 	
@@ -254,6 +255,9 @@ function Osi.CombatRoundStarted(combatGuid, round) end
 ---@param combatGuid GUIDSTRING
 function Osi.CombatStarted(combatGuid) end
 	
+---@param object GUIDSTRING
+function Osi.CombatTurnTimedOut(object) end
+	
 ---@param item1 ITEM
 ---@param item2 ITEM
 ---@param item3 ITEM
@@ -311,6 +315,10 @@ function Osi.Deactivated(object) end
 	
 ---@param character CHARACTER
 function Osi.DeathSaveStable(character) end
+	
+---@param entity GUIDSTRING
+---@param newDeathType DEATHTYPE
+function Osi.DeathTypeChanged(entity, newDeathType) end
 	
 ---@param item ITEM
 ---@param destroyer CHARACTER
@@ -388,6 +396,12 @@ function Osi.DifficultyChanged(difficultyLevel) end
 ---@param character CHARACTER
 ---@param moveID integer
 function Osi.DisappearOutOfSightToCancelled(character, moveID) end
+	
+---@param donatedObject ITEM
+---@param fromObject GUIDSTRING
+---@param toObject GUIDSTRING
+---@param donatedObjectValue integer
+function Osi.Donated(donatedObject, fromObject, toObject, donatedObjectValue) end
 	
 ---@param itemTemplate ITEMROOT
 ---@param item2 ITEM
@@ -625,6 +639,10 @@ function Osi.LeftTrigger(character, trigger) end
 	
 ---@param levelName string
 ---@param isEditorMode integer
+function Osi.LevelGameplayReady(levelName, isEditorMode) end
+	
+---@param levelName string
+---@param isEditorMode integer
 function Osi.LevelGameplayStarted(levelName, isEditorMode) end
 	
 ---@param newLevel string
@@ -836,10 +854,22 @@ function Osi.PuzzleUIUsed(character, uIInstance, type, command, elementId) end
 	
 ---@param character CHARACTER
 ---@param questID string
+function Osi.QuestAcceptReverted(character, questID) end
+	
+---@param character CHARACTER
+---@param questID string
 function Osi.QuestAccepted(character, questID) end
 	
 ---@param questID string
+function Osi.QuestCloseReverted(questID) end
+	
+---@param questID string
 function Osi.QuestClosed(questID) end
+	
+---@param character CHARACTER
+---@param topLevelQuestID string
+---@param stateID string
+function Osi.QuestUpdateUnlockReverted(character, topLevelQuestID, stateID) end
 	
 ---@param character CHARACTER
 ---@param topLevelQuestID string
@@ -955,6 +985,8 @@ function Osi.RespecCancelled(character) end
 	
 ---@param character CHARACTER
 function Osi.RespecCompleted(character) end
+	
+function Osi.RestorePartyFinished() end
 	
 ---@param character CHARACTER
 function Osi.Resurrected(character) end
@@ -1128,6 +1160,11 @@ function Osi.StoppedLockpicking(character, item) end
 	
 ---@param character CHARACTER
 function Osi.StoppedSneaking(character) end
+	
+---@param character CHARACTER
+---@param subQuestID string
+---@param stateID string
+function Osi.SubQuestUpdateUnlockReverted(character, subQuestID, stateID) end
 	
 ---@param character CHARACTER
 ---@param subQuestID string

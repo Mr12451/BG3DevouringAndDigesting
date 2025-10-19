@@ -13,6 +13,7 @@ function SP_CharacterFromGUID(guid)
     return name .. "_" .. guid
 end
 
+-- !!!!! Custom difficulty classes do not work for some reason. It just sets the difficulty class to 0.
 ---@param character CHARACTER guid of character
 ---@param stat number stat to get save DC of 1 == Str, 2 == Dex, 3 == Con, 4 == Wis, 5 == Int, 6 == Cha, 0 = Highest
 ---@return DIFFICULTYCLASS guid that corresponds to that DC
@@ -42,6 +43,23 @@ end
 function SP_GetCharacterSize(character)
     local charData = Ext.Entity.Get(character)
     return charData.ObjectSize.Size
+end
+
+---Checks if a character has a status caused by another character
+---@param character CHARACTER
+---@param status string
+---@param cause CHARACTER
+---@return boolean
+function SP_HasStatusWithCause(character, status, cause)
+    local causeGUID = string.sub(cause, -36)
+    local charStatusData = Ext.Entity.Get(character).ServerCharacter.StatusManager.Statuses
+    for _, i in ipairs(charStatusData) do
+        if i.CauseGUID == causeGUID and i.StatusId == status then
+            _P("Found status " .. status .. " in " .. character)
+            return true
+        end
+    end
+    return false
 end
 
 ---Delays a function call by given milliseconds.

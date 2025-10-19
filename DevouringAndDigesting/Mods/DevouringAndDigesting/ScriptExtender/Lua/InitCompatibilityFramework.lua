@@ -37,6 +37,13 @@ local NewSubClasses = {
         class = "barbarian",
         subClassName = "Stomach Sentinel",
     },
+    SP_AcidDomain = {
+        subClassGuid = "2bc2a333-9fbb-49ba-9511-a3c8026f506d",
+        baseClassProgressionGuid = "1dbce574-fff1-49be-b7da-704f9b73cad9",
+        baseClassProgressionMulticlassGuid = "366cde9c-db0c-43ce-a49c-fb140e084b3c",
+        class = "cleric",
+        subClassName = "Acid Domain",
+    },
 }
 
 -- if Ext.Mod.IsModLoaded("67fbbd53-7c7d-4cfa-9409-6d737b4d92a9") then
